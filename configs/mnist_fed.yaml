@@ -40,7 +40,7 @@ fl_adv_group_size: 2
 # fl_single_epoch_attack: 20
 
 attack: ModelReplace
-defense: FedAvg
+defense: Flame
 fl_num_neurons: 8
 noise_mask_alpha: 0 # 0.5
 lagrange_step: 0.1
