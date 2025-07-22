@@ -38,8 +38,8 @@ fl_weight_scale: 5
 fl_adv_group_size: 5
 # fl_single_epoch_attack: 200
 
-attack: ThrDFed
-defense: 'FL-Detector'
+attack: ModelReplace
+defense: FedAvg
 fl_num_neurons: 5
 noise_mask_alpha: 0 # 0.5
 lagrange_step: 0.1
