@@ -39,7 +39,7 @@ fl_weight_scale: 5
 fl_adv_group_size: 2
 # fl_single_epoch_attack: 20
 
-attack: modelreplace
+attack: ModelReplace
 defense: fedavg
 fl_num_neurons: 8
 noise_mask_alpha: 0 # 0.5
