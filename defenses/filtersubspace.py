@@ -45,9 +45,8 @@ class FilterSubspace(FedAvg):
         flagged = [i for i, s in enumerate(avg_sim) if s < self.tau]
         distances = 1 - avg_sim 
 
-        logger.info(f"[FilterSubspace] dist={1-avg_sim.tolist()}  weights={weights.tolist()}  flagged={flagged}")
+        logger.info(f"[FilterSubspace] dist={distances.tolist()}  weights={weights.tolist()}  flagged={flagged}")
         logger.warning(f"[Round {self.params.current_round}]  dropped clients → {flagged}")
-
         # 4) apply weights in accumulation
         for i in range(n):
             path = f'{self.params.folder_path}/saved_updates/update_{i}.pth'
