@@ -38,6 +38,10 @@ fl_weight_scale: 5
 fl_adv_group_size: 5
 # fl_single_epoch_attack: 200
 
+# For FilterSubspace
+fs_tau: 0.8
+fs_layer_names: ['conv1', 'conv2']
+
 attack: ModelReplace
 defense: FedAvg
 fl_num_neurons: 5
