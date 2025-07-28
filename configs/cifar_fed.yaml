@@ -44,7 +44,7 @@ fs_layer_names:
   - conv2
 
 attack: ModelReplace
-defense: FilterSubspace
+defense: FedAvg
 fl_num_neurons: 5
 noise_mask_alpha: 0 # 0.5
 lagrange_step: 0.1
