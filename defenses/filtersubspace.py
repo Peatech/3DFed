@@ -43,6 +43,7 @@ class FilterSubspace(FedAvg):
         # 3) determine weights and flagged clients
         weights = np.clip(avg_sim / self.tau, 0, 1)   # simple linear scaling
         flagged = [i for i, s in enumerate(avg_sim) if s < self.tau]
+        distances = 1 - avg_sim 
 
         logger.info(f"[FilterSubspace] dist={1-avg_sim.tolist()}  weights={weights.tolist()}  flagged={flagged}")
         logger.warning(f"[Round {self.params.current_round}]  dropped clients → {flagged}")
