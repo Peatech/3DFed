@@ -1,7 +1,6 @@
 task: Cifar10
 synthesizer: Pattern
 
-
 batch_size: 64
 test_batch_size: 100
 lr: 0.1
