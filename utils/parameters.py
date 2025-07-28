@@ -87,13 +87,16 @@ class Params:
 
     attack: str = None #'ThrDFed' (3DFed), 'ModelRplace' (Model Replacement)
     
-    #"Foolsgold", "FLAME", "RFLBAT", "Deepsight", "FLDetector"
+    #"Foolsgold", "FLAME", "RFLBAT", "Deepsight", "FLDetector", "FilterSubspace"
     defense: str = None 
     lagrange_step: float = None
     random_neurons: List[int] = None
     noise_mask_alpha: float = None
     fl_adv_group_size: int = 0
     fl_num_neurons: int = 0
+    fs_tau: float = 0.8
+    fs_layer_names: List[str] = None  # e.g., ['conv1', 'conv2']
+
 
     def __post_init__(self):
         # enable logging anyways when saving statistics
