@@ -1,89 +1,60 @@
-# defenses/filter_subspace.py
-"""
-Filter‑Subspace Outlier Defence
---------------------------------
-• Clients keep shared α‑coeffs fixed (already the case in 3DFed’s models that
-  inherit from `AtomConv2d` / `NCModel`); they only update atoms.
-• Server receives each client's atoms, computes cosine‑distance to a robust
-  reference (median vector), applies MAD‑z threshold.
-• Returns aggregation weights + list of flagged client IDs.
-"""
-
-from typing import List, Dict
-import logging
 import torch
+import logging
+import os
+import numpy as np
+import sklearn.metrics.pairwise as smp
+from defenses.fedavg import FedAvg
 
-from defenses.defense import Defense           # 3DFed base‑class
-from utils.robust import mad_zscores
+logger = logging.getLogger('logger')
 
-logger = logging.getLogger("logger")
-
-# ---------------------------------------------------------------------------
-
-def _flatten_atoms(state_dict: Dict[str, torch.Tensor],
-                   layers: List[str]) -> torch.Tensor:
+class FilterSubspace(FedAvg):
     """
-    Concatenate flattened `atoms` tensors from the chosen layers.
-    Expects keys like 'conv1.atoms'  or  'layer1.0.conv1.atoms'.
+    Defense based on filter-subspace similarity:
+      - computes cosine distances over each client's filter-atom layers
+      - flags clients whose distance > tau
+      - returns per-client weights (zeros for flagged) and flagged IDs
     """
-    vecs = []
-    for name in layers:
-        key = f"{name}.atoms"
-        if key not in state_dict:
-            raise KeyError(f"[FilterSubspace] param '{key}' not found. "
-                           f"Check fs_layers list.")
-        vecs.append(state_dict[key].flatten())
-    return torch.cat(vecs).cpu()        # 1‑D tensor on CPU
-
-
-class FilterSubspaceDefense(Defense):
-    """Called by Helper.before_agg each FL round."""
 
     def __init__(self, params):
         super().__init__(params)
-        # Configurable via YAML
-        self.layers = params.fs_layers          # List[str]
-        self.tau    = params.fs_tau             # float
+        self.tau = params.fs_tau       # similarity threshold
+        self.layer_names = params.fs_layer_names  # list of conv layers to check
 
-    # ------------------------------------------------------------------
-    def before_agg(self,
-                   clients_updates: List[Dict[str, torch.Tensor]],
-                   client_ids: List[int]):
-        """
-        Parameters
-        ----------
-        clients_updates : list of each client’s delta state‑dict
-        client_ids      : list[int]  – same order as updates
+    def aggr(self, weight_accumulator, global_model):
+        # 1) Load all updates
+        n = self.params.fl_total_participants
+        all_updates = []
+        for i in range(n):
+            path = f'{self.params.folder_path}/saved_updates/update_{i}.pth'
+            upd = torch.load(path)
+            # extract just the filter-atom parameters
+            vec = []
+            for name, tensor in upd.items():
+                if any(ln in name for ln in self.layer_names):
+                    vec.append(tensor.detach().cpu().numpy().ravel())
+            all_updates.append(np.concatenate(vec))
+        all_updates = np.stack(all_updates, axis=0)
 
-        Returns
-        -------
-        weights  : list[float]  – aggregation weights (sum=1)
-        flagged  : list[int]    – IDs whose weight==0
-        """
-        # 1. build flattened atom vectors
-        atom_vecs = []
-        for upd in clients_updates:
-            atom_vecs.append(_flatten_atoms(upd, self.layers))
-        atom_vecs = torch.stack(atom_vecs)          # (n, L)
+        # 2) compute pairwise cosine similarities
+        sims = smp.cosine_similarity(all_updates)
+        # for each client, average similarity to others
+        avg_sim = sims.mean(axis=1)
 
-        # 2. robust reference = element‑wise median
-        ref = atom_vecs.median(dim=0).values
+        # 3) determine weights and flagged clients
+        weights = np.clip(avg_sim / self.tau, 0, 1)   # simple linear scaling
+        flagged = [i for i, s in enumerate(avg_sim) if s < self.tau]
 
-        # 3. cosine distance (1 – cosine similarity)
-        dists = 1 - torch.nn.functional.cosine_similarity(
-            atom_vecs, ref.unsqueeze(0), eps=1e-8)
+        logger.info(f"[FilterSubspace] dist={1-avg_sim.tolist()}  weights={weights.tolist()}  flagged={flagged}")
+        logger.warning(f"[Round {self.params.current_round}]  dropped clients → {flagged}")
 
-        # 4. MAD‑z scores & weights
-        z = mad_zscores(dists)
-        w = torch.clamp(self.tau - z, min=0.0)
-        if torch.allclose(w, torch.zeros_like(w)):   # all outliers? soften
-            w += 1e-3
-        w /= w.sum()
+        # 4) apply weights in accumulation
+        for i in range(n):
+            path = f'{self.params.folder_path}/saved_updates/update_{i}.pth'
+            upd = torch.load(path)
+            scale = weights[i]
+            for name, tensor in upd.items():
+                if self.check_ignored_weights(name):
+                    continue
+                weight_accumulator[name].add_(tensor.to(self.params.device) * scale)
 
-        flagged = [cid for cid, wi in zip(client_ids, w) if wi == 0.0]
-
-        # 5. pretty log
-        logger.info(f"[FilterSubspace]  dist={dists.round(3).tolist()}  "
-                    f"weights={w.round(3).tolist()}  flagged={flagged}")
-
-        return w.tolist(), flagged
+        return weight_accumulator
