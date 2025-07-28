@@ -97,7 +97,7 @@ class Helper:
         except (ModuleNotFoundError, AttributeError):
             raise ModuleNotFoundError(f'Your defense: {self.params.defense} should '
                                       f'be one of the follow: FLAME, Deepsight, \
-                                        Foolsgold, FLDetector, RFLBAT, FedAvg')
+                                        Foolsgold, FLDetector, RFLBAT, FilterSubspace, FedAvg')
         self.defense = defense_class(self.params)
 
     def make_folders(self):
