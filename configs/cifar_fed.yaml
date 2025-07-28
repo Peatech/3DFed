@@ -40,7 +40,9 @@ fl_adv_group_size: 5
 
 # For FilterSubspace
 fs_tau: 0.8
-fs_layer_names: ['conv1', 'conv2']
+fs_layer_names:
+  - conv1
+  - conv2
 
 attack: ModelReplace
 defense: FedAvg
