@@ -48,13 +48,18 @@ class FilterSubspace(FedAvg):
         atom_vecs, update_paths, client_ids = [], [], []
         for cid in range(n_sel):
             up_path = os.path.join(
-                self.params.folder_path, "saved_updates", f"update_{cid}.pth"
-            )
+                 self.params.folder_path, "saved_updates", f"update_{cid}.pth"
+             )
+            if not os.path.exists(up_path):
+                logger.warning(
+                   f"[FilterSubspace] update_{cid}.pth missing – client "
+                    "was probably skipped; ignoring.")
+                continue
             upd = torch.load(up_path, map_location="cpu")
             atom_vecs.append(self._flatten_atoms(upd))
             update_paths.append(up_path)
             client_ids.append(cid)
-        atom_vecs = np.stack(atom_vecs, axis=0)          # (n_sel, dim)
+        atom_vecs = np.stack(atom_vecs, axis=0)          # (n_present, dim)
 
         # 2️⃣  Robust reference: coordinate-wise median
         ref_vec = np.median(atom_vecs, axis=0, keepdims=True)  # (1, dim)
