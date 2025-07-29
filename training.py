@@ -62,7 +62,7 @@ def run_fl_round(hlpr: Helper, epoch):
                 train(hlpr, local_epoch, local_model, optimizer,
                         user.train_loader, attack=False)
         local_update = hlpr.attack.get_fl_update(local_model, global_model)
-        hlpr.save_update(model=local_update, userID=user.user_id)
+        hlpr.save_update(model=local_update, userID=user)
         if user.compromised:
             hlpr.attack.local_dataset = deepcopy(user.train_loader)
 
