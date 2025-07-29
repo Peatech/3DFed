@@ -25,9 +25,9 @@ transform_train: True
 
 fl: True
 fl_no_models: 10
-fl_local_epochs: 2
+fl_local_epochs: 3
 fl_poison_epochs: 15
-fl_total_participants: 100
+fl_total_participants: 15
 fl_eta: 1 # 0.8
 fl_sample_dirichlet: True
 fl_dirichlet_alpha: 0.9
