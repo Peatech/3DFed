@@ -46,6 +46,8 @@ def run_fl_round(hlpr: Helper, epoch):
     global_model = hlpr.task.model
     local_model = hlpr.task.local_model
     round_participants = hlpr.task.sample_users_for_round(epoch)
+    client_ids = [u.user_id for u in round_participants]
+    logger.info(f"Sampled clients in epoch {epoch}: {client_ids}")
     weight_accumulator = hlpr.task.get_empty_accumulator()
     saved_ids = []
 
@@ -69,7 +71,7 @@ def run_fl_round(hlpr: Helper, epoch):
             hlpr.attack.local_dataset = deepcopy(user.train_loader)
 
     hlpr.attack.perform_attack(global_model, epoch)
-    hlpr.defense.aggr(weight_accumulator, global_model,client_ids=saved_ids)
+    hlpr.defense.aggr(weight_accumulator, global_model,client_ids=client_ids)
     hlpr.task.update_global_model(weight_accumulator, global_model)
 
 def run(hlpr: Helper):
