@@ -31,11 +31,11 @@ fl_local_epochs: 1
 fl_poison_epochs: 15
 fl_total_participants: 20
 fl_eta: 1
-fl_sample_dirichlet: True
+fl_sample_dirichlet: False
 fl_dirichlet_alpha: 0.9
 
 fl_number_of_adversaries: 4
-fl_weight_scale: 50
+fl_weight_scale: 10
 fl_adv_group_size: 2
 # fl_single_epoch_attack: 20
 
