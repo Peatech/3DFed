@@ -47,6 +47,7 @@ def run_fl_round(hlpr: Helper, epoch):
     local_model = hlpr.task.local_model
     round_participants = hlpr.task.sample_users_for_round(epoch)
     weight_accumulator = hlpr.task.get_empty_accumulator()
+    saved_ids = []
 
     for user in tqdm(round_participants):
         hlpr.task.copy_params(global_model, local_model)
@@ -63,11 +64,12 @@ def run_fl_round(hlpr: Helper, epoch):
                         user.train_loader, attack=False)
         local_update = hlpr.attack.get_fl_update(local_model, global_model)
         hlpr.save_update(model=local_update, userID=user.user_id)
+        saved_ids.append(user.user_id)
         if user.compromised:
             hlpr.attack.local_dataset = deepcopy(user.train_loader)
 
     hlpr.attack.perform_attack(global_model, epoch)
-    hlpr.defense.aggr(weight_accumulator, global_model)
+    hlpr.defense.aggr(weight_accumulator, global_model,client_ids=saved_ids)
     hlpr.task.update_global_model(weight_accumulator, global_model)
 
 def run(hlpr: Helper):
