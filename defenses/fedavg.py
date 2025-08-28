@@ -20,10 +20,14 @@ class FedAvg:
         for i in range(self.params.fl_no_models):
             updates_name = '{0}/saved_updates/update_{1}.pth'\
                 .format(self.params.folder_path, i)
-            loaded_params = torch.load(updates_name)
-            self.accumulate_weights(weight_accumulator, \
-                {key:loaded_params[key].to(self.params.device) for \
-                    key in loaded_params})
+            if os.path.exists(updates_name):
+                loaded_params = torch.load(updates_name)
+                self.accumulate_weights(weight_accumulator, \
+                    {key:loaded_params[key].to(self.params.device) for \
+                        key in loaded_params})
+            else:
+                logger.warning(f"Update file {updates_name} not found, skipping client {i}")
+                continue
 
     def accumulate_weights(self, weight_accumulator, local_update):
         for name, value in local_update.items():
