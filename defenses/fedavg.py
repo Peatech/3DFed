@@ -26,7 +26,7 @@ class FedAvg:
                     {key:loaded_params[key].to(self.params.device) for \
                         key in loaded_params})
             else:
-                logger.warning(f"Update file {updates_name} not found, skipping client {i}")
+                # logger.warning(f"Update file {updates_name} not found, skipping client {i}")
                 continue
 
     def accumulate_weights(self, weight_accumulator, local_update):
