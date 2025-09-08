@@ -40,6 +40,7 @@ class FedAvgCKA(FedAvg):
         # Initialize components
         self.root_dataset_loader = None
         self.telemetry = []
+        self.participating_user_ids = None  # Track actual participating users
         
     def initialize_fedavgcka(self, task, global_model, device='cpu'):
         """Initialize FedAvgCKA defense with root dataset and configuration."""
@@ -118,6 +119,10 @@ class FedAvgCKA(FedAvg):
             logger.error(f"Failed to create random root dataset: {e}")
             return None
 
+    def set_participating_users(self, user_ids):
+        """Set the actual participating user IDs for this round."""
+        self.participating_user_ids = user_ids
+    
     def aggr(self, weight_accumulator, global_model):
         """Override aggregation to apply FedAvgCKA filtering."""
         if not self.fedavgcka_enabled or self.root_dataset_loader is None:
@@ -127,12 +132,16 @@ class FedAvgCKA(FedAvg):
         try:
             start_time = time.time()
             
-            # Load client updates
+            # Load client updates - use actual participating user IDs
             client_models = {}
             client_weights = {}
             
-            for i in range(self.params.fl_no_models):
-                updates_name = f'{self.params.folder_path}/saved_updates/update_{i}.pth'
+            # Use actual participating user IDs if available, otherwise fall back to range
+            user_ids_to_check = (self.participating_user_ids if self.participating_user_ids 
+                                else range(self.params.fl_no_models))
+            
+            for user_id in user_ids_to_check:
+                updates_name = f'{self.params.folder_path}/saved_updates/update_{user_id}.pth'
                 try:
                     loaded_params = torch.load(updates_name)
                     
@@ -142,11 +151,11 @@ class FedAvgCKA(FedAvg):
                         if not self.check_ignored_weights(name):
                             client_model.state_dict()[name].add_(data.to(self.params.device))
                     
-                    client_models[i] = client_model
-                    client_weights[i] = {key: loaded_params[key].to(self.params.device) for key in loaded_params}
+                    client_models[user_id] = client_model
+                    client_weights[user_id] = {key: loaded_params[key].to(self.params.device) for key in loaded_params}
                     
                 except FileNotFoundError:
-                    logger.warning(f"Update file {updates_name} not found, skipping client {i}")
+                    logger.warning(f"Update file {updates_name} not found, skipping client {user_id}")
                     continue
             
             if not client_models:

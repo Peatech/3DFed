@@ -74,6 +74,12 @@ def run_fl_round(hlpr: Helper, epoch):
             hlpr.attack.local_dataset = deepcopy(user.train_loader)
 
     hlpr.attack.perform_attack(global_model, epoch)
+    
+    # Pass the actual participating user IDs to the defense
+    participating_user_ids = [user.user_id for user in round_participants]
+    if hasattr(hlpr.defense, 'set_participating_users'):
+        hlpr.defense.set_participating_users(participating_user_ids)
+    
     hlpr.defense.aggr(weight_accumulator, global_model)
     hlpr.task.update_global_model(weight_accumulator, global_model)
 

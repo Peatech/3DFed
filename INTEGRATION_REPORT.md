@@ -109,23 +109,32 @@ INFO:   Compute time: 2.34 s
 
 ## Error Fixes Applied
 
-### 1. Missing Dependencies
+### 1. Critical User ID Mismatch Fix
+- **Issue**: Defense expected update files from clients 0-9 but actual participants had random IDs (23, 45, 67, etc.)
+- **Root Cause**: `sample_users_for_round()` randomly selects from 100 participants but defense loaded fixed range 0-9
+- **Fix**: 
+  - Modified training loop to pass actual participating user IDs to defense
+  - Updated FedAvgCKA and FedAvg base classes to track real user IDs
+  - Added `set_participating_users()` method to all defenses
+- **Result**: Eliminates "update file not found" errors, defense now filters correct clients
+
+### 2. Missing Dependencies
 - **Issue**: FLAME and Deepsight defenses failed to import due to missing `hdbscan` package
 - **Fix**: Added `hdbscan` installation and documented in requirements
 
-### 2. Import Path Consistency
+### 3. Import Path Consistency
 - **Issue**: Inconsistent import paths in defense modules
 - **Fix**: Standardized all imports to use absolute paths from project root
 
-### 3. Parameter Integration
+### 4. Parameter Integration
 - **Issue**: FedAvgCKA parameters not integrated into the main parameter system
 - **Fix**: Added all FedAvgCKA parameters to `utils/parameters.py` with proper defaults
 
-### 4. Defense Factory Integration
+### 5. Defense Factory Integration
 - **Issue**: Helper class didn't recognize FedAvgCKA as a valid defense
 - **Fix**: Updated defense creation logic and error messages
 
-### 5. Training Loop Integration
+### 6. Training Loop Integration
 - **Issue**: FedAvgCKA initialization not called during training
 - **Fix**: Added initialization call in first epoch of training loop
 
