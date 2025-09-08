@@ -48,7 +48,7 @@ class ThrDFed(Attack):
         file_name = '{0}/saved_updates/update_0.pth'.format(self.params.folder_path)
 
         # Read indicators
-        if epoch > self.params.poison_epoch:
+        if epoch > self.params.poison_epoch and self.last_global_model is not None:
             global_update = self.get_fl_update(global_model, self.last_global_model)
             accept, self.weakDP = read_indicator(self.params, global_update, \
                 self.indicators, ind_layer, self.weakDP)
