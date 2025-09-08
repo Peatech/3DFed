@@ -87,13 +87,21 @@ class Params:
 
     attack: str = None #'ThrDFed' (3DFed), 'ModelRplace' (Model Replacement)
     
-    #"Foolsgold", "FLAME", "RFLBAT", "Deepsight", "FLDetector"
+    #"Foolsgold", "FLAME", "RFLBAT", "Deepsight", "FLDetector", "FedAvgCKA"
     defense: str = None 
     lagrange_step: float = None
     random_neurons: List[int] = None
     noise_mask_alpha: float = None
     fl_adv_group_size: int = 0
     fl_num_neurons: int = 0
+    
+    # FedAvgCKA Defense parameters
+    fedavgcka_enabled: bool = False
+    fedavgcka_root_dataset_size: int = 64
+    fedavgcka_root_dataset_strategy: str = 'class_balanced'  # 'random' or 'class_balanced'
+    fedavgcka_layer_comparison: str = 'penultimate'  # 'penultimate', 'layer2', 'layer3', 'multi_layer'
+    fedavgcka_trim_fraction: float = 0.3  # Fraction of clients to exclude
+    fedavgcka_log_scores: bool = True  # Enable detailed logging
 
     def __post_init__(self):
         # enable logging anyways when saving statistics

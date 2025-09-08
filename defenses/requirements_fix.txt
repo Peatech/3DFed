@@ -1,0 +1,18 @@
+# Additional requirements needed for 3DFed defenses
+
+# Required for FLAME and Deepsight defenses
+hdbscan>=0.8.27
+scikit-learn>=1.0.0
+
+# Required for FLDetector and RFLBAT defenses  
+scikit-learn>=1.0.0
+
+# Required for RFLBAT visualization
+matplotlib>=3.5.0
+
+# Required for all defenses using cosine similarity
+numpy>=1.21.0
+
+# Core dependencies (already in utils/requirements.txt)
+torch>=1.11.0
+tqdm>=4.64.0

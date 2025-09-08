@@ -47,6 +47,13 @@ def run_fl_round(hlpr: Helper, epoch):
     local_model = hlpr.task.local_model
     round_participants = hlpr.task.sample_users_for_round(epoch)
     weight_accumulator = hlpr.task.get_empty_accumulator()
+    
+    # Initialize FedAvgCKA if needed
+    if (hasattr(hlpr.params, 'fedavgcka_enabled') and 
+        hlpr.params.fedavgcka_enabled and 
+        hasattr(hlpr.defense, 'initialize_fedavgcka') and
+        epoch == hlpr.params.start_epoch):
+        hlpr.defense.initialize_fedavgcka(hlpr.task, global_model, hlpr.params.device)
 
     for user in tqdm(round_participants):
         hlpr.task.copy_params(global_model, local_model)

@@ -44,3 +44,11 @@ defense: Deepsight
 fl_num_neurons: 8
 noise_mask_alpha: 0 # 0.5
 lagrange_step: 0.1
+
+# FedAvgCKA Defense Configuration (disabled by default)
+fedavgcka_enabled: false
+fedavgcka_root_dataset_size: 32
+fedavgcka_root_dataset_strategy: class_balanced
+fedavgcka_layer_comparison: penultimate
+fedavgcka_trim_fraction: 0.3
+fedavgcka_log_scores: true
