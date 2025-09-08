@@ -60,7 +60,8 @@ def compute_euclidean_loss(params: Params,
     size = 0
     for name, layer in model.named_parameters():
         size += layer.view(-1).shape[0]
-    sum_var = torch.cuda.FloatTensor(size).fill_(0)
+    device = next(model.parameters()).device
+    sum_var = torch.zeros(size, device=device)
     size = 0
     for name, layer in model.named_parameters():
         sum_var[size:size + layer.view(-1).shape[0]] = (layer - \
@@ -75,7 +76,8 @@ def get_one_vec(model: Module):
         size = 0
         for name, layer in model.named_parameters():
             size += layer.view(-1).shape[0]
-            sum_var = torch.cuda.FloatTensor(size).fill_(0)
+        device = next(model.parameters()).device  # Get device from model parameters  
+        sum_var = torch.zeros(size, device=device)  # Use device-agnostic tensor creation
         size = 0
         for name, layer in model.named_parameters():
             sum_var[size:size + layer.view(-1).shape[0]] = (layer.data).view(-1)
@@ -132,7 +134,8 @@ def compute_noise_norm_loss(params: Params,
             size += layer.view(-1).shape[0]
     losses = []
     for i in range(len(noise_masks)):
-        sum_var = torch.cuda.FloatTensor(size).fill_(0)
+        device = next(model.parameters()).device
+        sum_var = torch.zeros(size, device=device)
         noise_size = 0
         for name, layer in noise_masks[i].named_parameters():
             if layer_name in name:
@@ -157,7 +160,8 @@ def compute_lagrange_loss(params: Params,
     for name, layer in noise_masks[0].named_parameters():
         if layer_name in name:
             size += layer.view(-1).shape[0]
-    sum_var = torch.cuda.FloatTensor(size).fill_(0)
+    device = next(model.parameters()).device
+    sum_var = torch.zeros(size, device=device)
     for i in range(len(noise_masks)):
         size = 0
         for name, layer in noise_masks[i].named_parameters():

@@ -109,9 +109,13 @@ class Params:
                 self.print_memory_consumption:
             self.log = True
 
-        if self.log:
+        # Always create folder_path, even if logging is disabled (needed for temp files)
+        if self.current_time and self.name:
             self.folder_path = f'saved_models/model_' \
                                f'{self.task}_{self.current_time}_{self.name}'
+        else:
+            # Fallback for testing or when name/time not provided
+            self.folder_path = f'saved_models/temp_{self.task}'
 
         self.running_losses = defaultdict(list)
         self.running_scales = defaultdict(list)

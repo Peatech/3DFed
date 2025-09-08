@@ -23,6 +23,7 @@ class Attack:
         self.synthesizer = synthesizer
         self.loss_tasks = ['normal', 'backdoor']
         self.fixed_scales = {'normal':0.5, 'backdoor':0.5}
+        self.local_dataset = None  # Initialize to None, will be set by training loop
 
     def perform_attack(self, _) -> None:
         raise NotImplemented

@@ -64,12 +64,15 @@ class Task:
         self.metrics = [AccuracyMetric(), TestLossMetric(self.criterion)]
         self.set_input_shape()
 
-        # Initialize the logger
-        fh = logging.FileHandler(
-                filename=f'{self.params.folder_path}/log.txt')
-        formatter = logging.Formatter('%(message)s')
-        fh.setFormatter(formatter)
-        logger.addHandler(fh)
+        # Initialize the logger only if logging is enabled
+        if self.params.log:
+            import os
+            os.makedirs(self.params.folder_path, exist_ok=True)
+            fh = logging.FileHandler(
+                    filename=f'{self.params.folder_path}/log.txt')
+            formatter = logging.Formatter('%(message)s')
+            fh.setFormatter(formatter)
+            logger.addHandler(fh)
 
     def load_data(self) -> None:
         raise NotImplemented

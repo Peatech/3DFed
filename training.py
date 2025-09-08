@@ -64,14 +64,14 @@ def run_fl_round(hlpr: Helper, epoch):
             for local_epoch in tqdm(range(hlpr.params.fl_poison_epochs)):
                 train(hlpr, local_epoch, local_model, optimizer,
                         user.train_loader, attack=True, global_model=global_model)
+            # Set local_dataset for compromised user (used by attacks like ThrDFed)
+            hlpr.attack.local_dataset = deepcopy(user.train_loader)
         else:
             for local_epoch in range(hlpr.params.fl_local_epochs):
                 train(hlpr, local_epoch, local_model, optimizer,
                         user.train_loader, attack=False)
         local_update = hlpr.attack.get_fl_update(local_model, global_model)
         hlpr.save_update(model=local_update, userID=user.user_id)
-        if user.compromised:
-            hlpr.attack.local_dataset = deepcopy(user.train_loader)
 
     hlpr.attack.perform_attack(global_model, epoch)
     

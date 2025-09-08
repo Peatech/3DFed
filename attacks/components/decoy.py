@@ -109,6 +109,11 @@ def benign_training(params: Params, global_model: nn.Module, attack: Attack):
                                 lr=params.lr,
                                 weight_decay=params.decay)
 
+    # Check if local_dataset is available
+    if attack.local_dataset is None:
+        logger.warning("No local_dataset available for benign training, skipping")
+        return benign_model
+
     benign_model.train()
     for _ in range(params.fl_local_epochs):
         for i, data in enumerate(attack.local_dataset):

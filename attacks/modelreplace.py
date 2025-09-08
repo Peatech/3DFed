@@ -18,6 +18,13 @@ class ModelReplace(Attack):
 
         folder_name = f'{self.params.folder_path}/saved_updates'
         file_name = f'{folder_name}/update_0.pth'
+        
+        # Check if the update file exists before trying to load it
+        import os
+        if not os.path.exists(file_name):
+            print(f"Warning: {file_name} does not exist, skipping ModelReplace attack")
+            return
+            
         loaded_params = torch.load(file_name)
         self.scale_update(loaded_params, self.params.fl_weight_scale)
         for i in range(self.params.fl_number_of_adversaries):
