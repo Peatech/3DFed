@@ -340,23 +340,55 @@ class FedAvgCKA(FedAvg):
             X = X.float()
             Y = Y.float()
             
+            # Check for NaN or infinite values in inputs
+            if torch.isnan(X).any() or torch.isinf(X).any():
+                logger.warning("NaN or Inf values detected in X, returning 0.0")
+                return 0.0
+            if torch.isnan(Y).any() or torch.isinf(Y).any():
+                logger.warning("NaN or Inf values detected in Y, returning 0.0")
+                return 0.0
+            
             # Center the data
             X_centered = X - X.mean(dim=0, keepdim=True)
             Y_centered = Y - Y.mean(dim=0, keepdim=True)
+            
+            # Check if centered data has zero variance (all identical activations)
+            X_var = torch.var(X_centered)
+            Y_var = torch.var(Y_centered)
+            
+            if X_var < 1e-12 or Y_var < 1e-12:
+                logger.warning("Very low variance in activations, returning 0.0")
+                return 0.0
             
             # Compute Gram matrices
             K_X = torch.mm(X_centered, X_centered.t())  # (n_samples, n_samples)
             K_Y = torch.mm(Y_centered, Y_centered.t())  # (n_samples, n_samples)
             
-            # Compute CKA
-            numerator = torch.trace(torch.mm(K_X, K_Y))
-            denominator = torch.sqrt(torch.trace(torch.mm(K_X, K_X)) * torch.trace(torch.mm(K_Y, K_Y)))
+            # Check for numerical stability in Gram matrices
+            trace_XX = torch.trace(torch.mm(K_X, K_X))
+            trace_YY = torch.trace(torch.mm(K_Y, K_Y))
             
-            if denominator == 0:
-                logger.warning("Denominator is zero in CKA computation")
+            # Add epsilon for numerical stability
+            eps = 1e-12
+            if trace_XX < eps or trace_YY < eps:
+                logger.warning("Trace values too small, numerical instability detected")
+                return 0.0
+            
+            # Compute CKA with numerical stability checks
+            numerator = torch.trace(torch.mm(K_X, K_Y))
+            denominator = torch.sqrt(trace_XX * trace_YY)
+            
+            if denominator < eps:
+                logger.warning("Denominator too small in CKA computation")
                 return 0.0
             
             cka = numerator / denominator
+            
+            # Final check for valid result
+            if torch.isnan(cka) or torch.isinf(cka):
+                logger.warning("CKA result is NaN or Inf, returning 0.0")
+                return 0.0
+                
             return float(cka.item())
             
         except Exception as e:
