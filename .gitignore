@@ -1,2 +1,57 @@
-.data/
+# -------------------------
+# 3DFed Repo .gitignore
+# -------------------------
+
+# Python cache and build files
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+.env/
+.venv/
+env/
+venv/
+ENV/
+
+# Logs and temp files
+*.log
+*.out
+*.tmp
+*.swp
+*.DS_Store
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# Datasets
+.data/
+*.tar.gz
+*.zip
+*.gz
+
+# Model weights and checkpoints
+*.pth
+*.pt
+*.ckpt
+
+# Saved models and training artifacts
+saved_models/
+checkpoints/
+outputs/
+results/
+history_*.pth
+
+# Reports generated during validation
+COMPREHENSIVE_VALIDATION_REPORT.md
+
+# IDE/project files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
