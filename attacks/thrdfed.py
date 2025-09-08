@@ -36,6 +36,11 @@ class ThrDFed(Attack):
             epoch not in range(self.params.poison_epoch,\
             self.params.poison_epoch_stop):
             return
+            
+        # Ensure we have local_dataset available for ThrDFed attack
+        if self.local_dataset is None:
+            print(f"Warning: ThrDFed attack skipped at epoch {epoch} - no compromised user data available")
+            return
 
         ind_layer = 'conv2.weight' if 'MNIST' in self.params.task \
                     else 'layer4.1.conv2.weight'
@@ -71,7 +76,11 @@ class ThrDFed(Attack):
         # Save the update before making any progress
         torch.save(backdoor_update, file_name)
 
-        # Find indicators
+        # Find indicators - check if local_dataset is available
+        if self.local_dataset is None:
+            print("Warning: No local_dataset available for ThrDFed indicator design, skipping attack")
+            return
+            
         self.indicators = design_indicator(self.params, self.k, deepcopy(global_model), 
                 deepcopy(backdoor_update), deepcopy(benign_update),
                 nn.CrossEntropyLoss(reduction='none'), self.local_dataset, self.synthesizer)

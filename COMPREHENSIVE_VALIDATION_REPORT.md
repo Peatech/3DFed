@@ -66,6 +66,21 @@ def set_participating_users(self, user_ids):
 **Problem**: Log directories not created
 **Solution**: Added automatic directory creation in task initialization
 
+### 6. **ThrDFed NoneType Iteration (Post-Production)**
+**Problem**: `TypeError: 'NoneType' object is not iterable` in design_indicator
+**Solution**: Added defensive checks for local_dataset availability in ThrDFed attack
+```python
+# Early check in perform_attack
+if self.local_dataset is None:
+    print(f"Warning: ThrDFed attack skipped at epoch {epoch} - no compromised user data available")
+    return
+
+# Additional check before design_indicator
+if self.local_dataset is None:
+    print("Warning: No local_dataset available for ThrDFed indicator design, skipping attack")
+    return
+```
+
 ## 🆕 FedAvgCKA Integration
 
 ### **Successfully Integrated Custom Defense**
